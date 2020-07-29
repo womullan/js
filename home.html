@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<!-- just messing about with google
+    -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style type="text/css" media="all">
+@import url("https://www.lsst.org/sites/all/themes/edu/css/style.css");
+@import url("https://www.lsst.org/sites/default/files/fontyourface/font.css");
+@import url("https://www.lsst.org/sites/default/files/css_injector/css_injector_4.css");
+</style>
+<script src="https://d3js.org/d3.v3.min.js?v=3.2.8"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script type="text/javascript"charset="utf-8">
+	google.charts.load('current', {'packages':['corechart']});
+
+        var dtab;
+        var data;
+        var count = 0;
+<!-- /gviz/tq on end of url gets the json back , gid is the tab  ?tqx=responseHandler:handleQueryResponse-->
+        var URL='https://docs.google.com/spreadsheets/d/1qCHiUs27gfqtRH9BMibkpTaQUlfJ6hGzioa66OmsIl4/gviz/tq#gid=0'
+
+        function getData() {
+		if (google.visualization != undefined && google.visualization.Query != undefined ) {
+			var query = new google.visualization.Query(URL);
+			query.setQuery('select A,B,C');
+			query.send(handleQueryResponse);
+		  	console.log(query)
+		} else {
+		    console.log("Wait google.viz..")
+		    setTimeout(getData, 300); // try again in 300 milliseconds
+	      }
+	}
+ 
+        function handleQueryResponse(resp) {
+	     console.log("handleQueryResponse" )
+	      if (resp.isError()) {
+		  alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+		  return;
+	      }
+	     console.log(resp)
+	     data= resp.getDataTable()
+	     dtab = []
+	     for (i=0; i<data.getNumberOfRows(); i++){
+		  var row = [data.getValue(i, 0),data.getValue(i, 1), data.getValue(i,2)];
+		  dtab.push(row);
+	     }  
+	}
+
+        function setupTable() {
+	     if (count >= 10) {
+		alert("Failed to get data from "+URL);
+		return
+	     }
+	     if (dtab) {
+		  $('#dtab').DataTable( {
+			paging: false,
+			data: dtab,
+			columns: [
+				 { title: data.getValue(0,0) },
+				 { title: data.getValue(0,1) },
+				 { title: data.getValue(0,2) }
+		                 ]	
+		  });
+              } else {
+		    count = count + 1;
+		    console.log("Wait ..")
+		    setTimeout(setupTable, 300); // try again in 300 milliseconds
+	      }
+	};
+
+        $(document).ready(function() {
+	    getData()
+            setupTable()	
+	});
+</script>
+</head>
+
+<body>
+<table id="dtab" class="display" width="100%"></table>
+</body>
+</html>
+
