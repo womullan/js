@@ -1,15 +1,15 @@
 
 <!DOCTYPE html>
-<!-- just messing about with google
+<!-- QUery a googly sheet - pull it in to a datatable to allow filtering
     -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<style type="text/css" media="all">
-@import url("https://www.lsst.org/sites/all/themes/edu/css/style.css");
-@import url("https://www.lsst.org/sites/default/files/fontyourface/font.css");
-@import url("https://www.lsst.org/sites/default/files/css_injector/css_injector_4.css");
-</style>
+<link rel="shortcut icon" href="wil.ico">
+<link rel="stylesheet" href="wil.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+
+
 <script src="https://d3js.org/d3.v3.min.js?v=3.2.8"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
@@ -30,7 +30,6 @@
 			var query = new google.visualization.Query(URL);
 			query.setQuery('select A,B,C');
 			query.send(handleQueryResponse);
-		  	console.log(query)
 		} else {
 		    console.log("Wait google.viz..")
 		    setTimeout(getData, 300); // try again in 300 milliseconds
@@ -38,12 +37,10 @@
 	}
  
         function handleQueryResponse(resp) {
-	     console.log("handleQueryResponse" )
 	      if (resp.isError()) {
 		  alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
 		  return;
 	      }
-	     console.log(resp)
 	     data= resp.getDataTable()
 	     dtab = []
 	     for (i=0; i<data.getNumberOfRows(); i++){
@@ -57,9 +54,9 @@
 		alert("Failed to get data from "+URL);
 		return
 	     }
+			<!-- paging: false,-->
 	     if (dtab) {
-		  $('#dtab').DataTable( {
-			paging: false,
+		  var dt = $('#dtab').DataTable( {
 			data: dtab,
 			columns: [
 				 { title: data.getValue(0,0) },
@@ -67,6 +64,8 @@
 				 { title: data.getValue(0,2) }
 		                 ]	
 		  });
+		     
+	      setupCol()
               } else {
 		    count = count + 1;
 		    console.log("Wait ..")
@@ -74,15 +73,48 @@
 	      }
 	};
 
+        function setupCol() {
+		var table = $('#dtab').DataTable();
+		 
+		table.columns().flatten().each( function ( colIdx ) {
+			    // Create the select list and search operation
+			    var select = $('<select />')
+			        .appendTo(
+				     table.column(colIdx).footer()
+				)
+			        .on( 'change', function () {
+					            table
+					                .column( colIdx )
+					                .search( $(this).val() )
+					                .draw();
+					        } );
+			 
+			    // Get the search data for the first column and add to the select list
+			    table
+			        .column( colIdx )
+			        .cache( 'search' )
+			        .sort()
+			        .unique()
+			        .each( function ( d ) {
+					            select.append( $('<option value="'+d+'">'+d+'</option>') );
+					        } );
+		} );
+	}
+
+
+
         $(document).ready(function() {
 	    getData()
             setupTable()	
 	});
+
 </script>
 </head>
 
 <body>
-<table id="dtab" class="display" width="100%"></table>
+<table id="dtab" class="display" width="100%">
+<tfoot> <tr> <th>Audience</th> <th>Org</th> <th>Detail</th>  </tr> </tfoot> 
+</table>
 </body>
 </html>
 
