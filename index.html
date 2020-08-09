@@ -83,27 +83,10 @@
 		var table = $('#dtab').DataTable();
 		 
 		table.columns().flatten().each( function ( colIdx ) {
-			    // Create the select list and search operation
-			if (colIdx == 1) {
-			    var inp = $('<input type="text" placeholder="Search" />')
-			        .appendTo(
-				     table.column(colIdx).footer()
-				)
-			        .on( 'keyup change clear', function () {
-				        table.column( colIdx )
-					         .search( $(this).val()).draw();
-			            });
-			     console.log(inp)
-			} else {
-			    var select = $('<select />')
-			        .appendTo(
-				     table.column(colIdx).footer()
-				)
-			        .on( 'change', function () {
-					            table.column( colIdx )
-					                .search( $(this).val()).draw();
-				   });
-			 
+			// Create the select list and/or search box add  operation
+			var search = $('<input type="text" placeholder="Search" />')
+			if ([0,2].includes(colIdx)) {
+			    search  = $('<select />')
 			    // Get the search data for the first column and add to the select list
 			    table
 			        .column( colIdx )
@@ -111,9 +94,16 @@
 			        .sort()
 			        .unique()
 			        .each( function ( d ) {
-					            select.append( $('<option value="'+d+'">'+d+'</option>') );
+					            search.append( $('<option value="'+d+'">'+d+'</option>') );
 					        } );
 		       }
+			search.appendTo(
+			     table.column(colIdx).footer()
+			)
+			.on( 'keyup change clear', function () {
+				table.column( colIdx )
+					 .search( $(this).val()).draw();
+			    });
 		} );
 	}
 
