@@ -15,6 +15,12 @@
 <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/css">
+	tfoot input { width: 100%;
+		      padding: 3px;
+		      box-sizing: border-box;
+		    }
+</script>
 
 <script type="text/javascript"charset="utf-8">
 	google.charts.load('current', {'packages':['corechart']});
@@ -28,7 +34,7 @@
         function getData() {
 		if (google.visualization != undefined && google.visualization.Query != undefined ) {
 			var query = new google.visualization.Query(URL);
-			query.setQuery('select A,B,C');
+			query.setQuery('select A,B,D');
 			query.send(handleQueryResponse);
 		} else {
 		    console.log("Wait google.viz..")
@@ -78,16 +84,25 @@
 		 
 		table.columns().flatten().each( function ( colIdx ) {
 			    // Create the select list and search operation
+			if (colIdx == 1) {
+			    var inp = $('<input type="text" placeholder="Search" />')
+			        .appendTo(
+				     table.column(colIdx).footer()
+				)
+			        .on( 'keyup change clear', function () {
+				        table.column( colIdx )
+					         .search( $(this).val()).draw();
+			            });
+			     console.log(inp)
+			} else {
 			    var select = $('<select />')
 			        .appendTo(
 				     table.column(colIdx).footer()
 				)
 			        .on( 'change', function () {
-					            table
-					                .column( colIdx )
-					                .search( $(this).val() )
-					                .draw();
-					        } );
+					            table.column( colIdx )
+					                .search( $(this).val()).draw();
+				   });
 			 
 			    // Get the search data for the first column and add to the select list
 			    table
@@ -98,6 +113,7 @@
 			        .each( function ( d ) {
 					            select.append( $('<option value="'+d+'">'+d+'</option>') );
 					        } );
+		       }
 		} );
 	}
 
@@ -112,8 +128,8 @@
 </head>
 
 <body>
-<table id="dtab" class="display" width="100%">
-<tfoot> <tr> <th>Audience</th> <th>Org</th> <th>Detail</th>  </tr> </tfoot> 
+<table id="dtab" class="display compact" style="width:100%">
+	<tfoot> <tr> <th></th> <th></th> <th></th>  </tr> </tfoot> 
 </table>
 </body>
 </html>
